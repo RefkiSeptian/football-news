@@ -32,7 +32,9 @@ PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "refki-septian-footballnews.pbp.cs.ui.ac.id"]
-
+CSRF_TRUSTED_ORIGINS = [
+    "<https://refki-septian-footballnews.pbp.cs.ui.ac.id/>"
+]
 
 # Application definition
 
@@ -61,8 +63,8 @@ ROOT_URLCONF = 'football_news.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True, # Hal ini dilakukan agar templates milik app (contohnya main) diprioritaskan daripada admin/base_site.html milik django.contrib.admin.
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
