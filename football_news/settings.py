@@ -32,6 +32,8 @@ PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "refki-septian-footballnews.pbp.cs.ui.ac.id"]
+
+# ini untuk membatasi siapa saja yang dapat mengirimkan request untuk memodifikasi data di database
 CSRF_TRUSTED_ORIGINS = [
     "https://refki-septian-footballnews.pbp.cs.ui.ac.id"
 ]

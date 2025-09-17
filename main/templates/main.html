@@ -15,8 +15,22 @@
   <button>+ Add News</button>
 </a>
 
+<a href="{% url 'main:logout' %}">
+  <button>Logout</button>
+</a>
+
+<h5>Sesi terakhir login: {{ last_login }}</h5>
+
+<a href="?filter=all">
+    <button type="button">All Articles</button>
+</a>
+<a href="?filter=my">
+    <button type="button">My Articles</button>
+</a> 
+
 <hr>
 
+<!-- Django Template Language yang membuat ini bsa ada if else dan for loop -->
 {% if not news_list %}
 <p>Belum ada data berita pada football news.</p>
 {% else %}
@@ -36,12 +50,19 @@
   {% endif %}
 
   <p>{{ news.content|truncatewords:25 }}...</p>
-
+  
+  <!-- href ini kan memang seharusnya di isi dengan url dong, tapi kita ingin dia dinamis
+  nah caranya pakai syntax url kemudian namespace (nama aplikasi) yang diikuti dengan 
+  name, ini semua dibutuhkan sebagai template nah kemudian news.id inilah yang
+  parameter yang dikirimkan untuk mengisi placeholder pada urlnya (liat url.py) -->
+  
+  <!-- kalau misalnya ada dua parameter berbeda yang dikirimkan ya tinggal ditambahkan saja
+  kemudian dipisahkan dengan satu spasi saja -->
   <p><a href="{% url 'main:show_news' news.id %}"><button>Read More</button></a></p>
 </div>
 
 <hr>
 {% endfor %}
-
+<!-- tag - tag ini untuk membatasi kode, sampai mana conditional atau forloopnya gitu -->
 {% endif %}
  {% endblock content %}

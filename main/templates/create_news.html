@@ -5,14 +5,16 @@
 <form method="POST">
   {% csrf_token %}
   <table>
-    {{ form.as_table }}
-    <tr>
-      <td></td>
-      <td>
+   {{ form.as_table }}  <!-- Django generate banyak <tr><td>, Djago otomatis meminta user mengisi field field yang diminta di form.py -->
+    <tr>                 <!-- Baris tambahan untuk tombol -->
+        <td></td>        <!-- Sel kosong (kolom pertama) -->
+        <td>             <!-- Sel kedua berisi tombol -->
         <input type="submit" value="Add NEWS" />
       </td>
     </tr>
   </table>
 </form>
 
+<!-- penutupan block itu sebaiknya dispesifikkan karena di Django ada banyak block. Jadi ini dapat
+memperjelas block yang mana yang kita tutup -->
 {% endblock %}
