@@ -1,14 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from main.forms import NewsForm
 from main.models import News
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 import datetime
-from django.urls import reverse 
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST 
+from django.utils.html import strip_tags
 
 '''HttpResponse: untuk mengirim response HTTP ke client
 serializers: untuk mengkonversi data dari database ke format XML atau JSON
@@ -78,17 +81,42 @@ def show_xml_by_id(request, news_id):
        return HttpResponse(status=404)
 
 def show_json_by_id(request, news_id):
-   try:
-       news_item = News.objects.get(pk=news_id) # get untuk mengambil single data saja
-       json_data = serializers.serialize("json", [news_item])
-       return HttpResponse(json_data, content_type="application/json")
-   except News.DoesNotExist:
-       return HttpResponse(status=404)
+    try:
+        news = News.objects.select_related('user').get(pk=news_id)
+        data = {
+            'id': str(news.id),
+            'title': news.title,
+            'content': news.content,
+            'category': news.category,
+            'thumbnail': news.thumbnail,
+            'news_views': news.news_views,
+            'created_at': news.created_at.isoformat() if news.created_at else None,
+            'is_featured': news.is_featured,
+            'user_id': news.user_id,
+            'user_username': news.user.username if news.user_id else None,
+        }
+        return JsonResponse(data)
+    except News.DoesNotExist:
+        return JsonResponse({'detail': 'Not found'}, status=404)
    
 def show_json(request):
     news_list = News.objects.all()
-    json_data = serializers.serialize("json", news_list)
-    return HttpResponse(json_data, content_type="application/json")
+    data = [
+        {
+            'id': str(news.id),
+            'title': news.title,
+            'content': news.content,
+            'category': news.category,
+            'thumbnail': news.thumbnail,
+            'news_views': news.news_views,
+            'created_at': news.created_at.isoformat() if news.created_at else None,
+            'is_featured': news.is_featured,
+            'user_id': news.user_id,
+        }
+        for news in news_list
+    ]
+
+    return JsonResponse(data, safe=False)
 
 def register(request):
     form = UserCreationForm()
@@ -156,3 +184,25 @@ def delete_news(request, id):
     news = get_object_or_404(News, pk=id)
     news.delete()
     return HttpResponseRedirect(reverse('main:show_main'))
+
+@csrf_exempt
+@require_POST
+def add_news_entry_ajax(request):
+    title = strip_tags(request.POST.get("title")) # strip HTML tags!
+    content = strip_tags(request.POST.get("content")) # strip HTML tags!
+    category = request.POST.get("category")
+    thumbnail = request.POST.get("thumbnail")
+    is_featured = request.POST.get("is_featured") == 'on'  # checkbox handling
+    user = request.user
+
+    new_news = News(
+        title=title, 
+        content=content,
+        category=category,
+        thumbnail=thumbnail,
+        is_featured=is_featured,
+        user=user
+    )
+    new_news.save()
+
+    return HttpResponse(b"CREATED", status=201)
